@@ -5,6 +5,7 @@
     "license": "LGPL-3",
     "website": "https://github.com/akretion/odoo-dataframe",
     "summary": "Reports issues on odoo records to be analyzed later.",
+    "development_status": "Beta",
     "depends": [
         "base",
     ],

@@ -5,7 +5,7 @@
     "category": "Data",
     "license": "LGPL-3",
     "author": "Akretion",
-    "development_status": "Alpha",
+    "development_status": "Beta",
     "website": "https://github.com/akretion/odoo-dataframe",
     "maintainers": ["bealdav"],
     "depends": [
