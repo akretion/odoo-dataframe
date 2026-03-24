@@ -1,0 +1,31 @@
+<odoo>
+    <record id="df_source_tech" model="ir.model.access">
+        <field name="name">df.source tech</field>
+        <field name="model_id" ref="model_df_source" />
+        <field name="group_id" ref="base.group_no_one" />
+        <field name="perm_read" eval="1" />
+        <field name="perm_create" eval="0" />
+        <field name="perm_write" eval="0" />
+        <field name="perm_unlink" eval="0" />
+    </record>
+
+    <record id="df_source_all" model="ir.model.access">
+        <field name="name">df.source all</field>
+        <field name="model_id" ref="model_df_source" />
+        <field name="group_id" ref="group_dataframe" />
+        <field name="perm_read" eval="1" />
+        <field name="perm_create" eval="1" />
+        <field name="perm_write" eval="1" />
+        <field name="perm_unlink" eval="1" />
+    </record>
+
+    <record id="matching_field_all" model="ir.model.access">
+        <field name="name">matching_field_all</field>
+        <field name="model_id" ref="model_matching_field" />
+        <field name="group_id" ref="group_dataframe" />
+        <field name="perm_read" eval="1" />
+        <field name="perm_create" eval="1" />
+        <field name="perm_write" eval="1" />
+        <field name="perm_unlink" eval="1" />
+    </record>
+</odoo>

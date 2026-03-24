@@ -1,0 +1,34 @@
+<odoo>
+    <menuitem
+        id="dataframe_menu"
+        name="🐻‍❄️ Dataframe"
+        groups="base.group_erp_manager"
+        parent="base.menu_administration"
+        sequence="0"
+    />
+    <menuitem
+        id="df_source_menu"
+        name="Data source"
+        action="df_source_action"
+        parent="dataframe_menu"
+        sequence="4"
+    />
+    <menuitem
+        id="refresh_df_source_menu"
+        action="refresh_df_source_action"
+        sequence="5"
+        parent="dataframe_menu"
+    />
+    <menuitem
+        id="matching_field_menu"
+        action="matching_field_action"
+        sequence="20"
+        parent="dataframe_menu"
+    />
+    <menuitem
+        id="field_log_menu"
+        sequence="100"
+        parent="dataframe_menu"
+        action="record_field_log.field_log_action"
+    />
+</odoo>
