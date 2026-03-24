@@ -12,6 +12,11 @@
         "mail",
         "record_field_log",
     ],
+    "external_dependencies": {
+        "python": [
+            "polars",
+        ]
+    },
     "data": [
         "security/group.xml",
         "security/ir.model.access.xml",
