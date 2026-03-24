@@ -1,0 +1,6 @@
+<odoo>
+    <function model="data.map" name="_add_demo_data">
+        <value eval="[]" />
+        <value>hello</value>
+    </function>
+</odoo>
