@@ -1,0 +1,20 @@
+<odoo>
+    <record id="field_log_tech" model="ir.model.access">
+        <field name="name">Field log record</field>
+        <field name="model_id" ref="model_field_log" />
+        <field name="group_id" ref="base.group_no_one" />
+        <field name="perm_read" eval="1" />
+        <field name="perm_create" eval="0" />
+        <field name="perm_write" eval="0" />
+        <field name="perm_unlink" eval="0" />
+    </record>
+    <record id="field_log_all" model="ir.model.access">
+        <field name="name">Field log record</field>
+        <field name="model_id" ref="model_field_log" />
+        <field name="group_id" ref="group_field_log" />
+        <field name="perm_read" eval="1" />
+        <field name="perm_create" eval="1" />
+        <field name="perm_write" eval="1" />
+        <field name="perm_unlink" eval="1" />
+    </record>
+</odoo>
