@@ -1,0 +1,11 @@
+[project]
+name = "odoo-addons-akretion-odoo-dataframe"
+version = "18.0.20260324.0"
+dependencies = [
+    "odoo-addon-record_field_log==18.0.*",
+]
+classifiers=[
+    "Programming Language :: Python",
+    "Framework :: Odoo",
+    "Framework :: Odoo :: 18.0",
+]
