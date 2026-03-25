@@ -51,10 +51,9 @@ class DfImport(models.AbstractModel):
                             + f"{vals}\n\n{row_viewer}"
                         ) from err
             if "id" in df_create.columns:
-                # breakpoint()
                 self._add_metadata(created_recs, df_create, source)
         if not updated_recs and not df_write.is_empty():
-            self._update_records_from_df(df_write, source)
+            updated_recs = self._update_records_from_df(df_write, source)
         return created_recs, updated_recs
 
     def _update_records_from_df(self, df, source):

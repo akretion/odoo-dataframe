@@ -17,7 +17,6 @@ class Test(TransactionCase):
         )
         data = {
             "name": ["Akretion", "Achimanapse", "Larry_the_cat"],
-            # "town": ["Lyon", "Brussels", "London"],
             "industry_id": ["base.res_partner_industry_J", None, None],
             "street": ["rue de l'arbre sec", "rue de ...", "10 downing street"],
             "write_date": ["24/01/2029", "12/06/2028", "07/11/2023"],
