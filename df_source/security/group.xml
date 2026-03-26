@@ -1,0 +1,11 @@
+<odoo>
+    <record id="group_dataframe" model="res.groups">
+        <field name="name">Dataframe Group</field>
+        <field name="comment">Polars dataframe to manipulate data</field>
+    </record>
+
+    <function model="res.users" name="write" context="{'no_reset_password': True}">
+        <value eval="[ref('base.user_admin')]" />
+        <value eval="{'groups_id': [(4, ref('group_dataframe'))]}" />
+    </function>
+</odoo>
