@@ -16,10 +16,10 @@ include_wkhtmltopdf: false
 odoo_test_flavor: Odoo
 odoo_version: 18.0
 org_name: Akretion
-org_slug: Akretion
+org_slug: akretion
 rebel_module_groups: []
-repo_description: ''
-repo_name: ''
+repo_description: Use polars dataframe to process data before using in Odoo
+repo_name: Dataframe with Odoo
 repo_slug: odoo-dataframe
 repo_website: https://github.com/akretion/odoo-dataframe
 use_pyproject_toml: true
