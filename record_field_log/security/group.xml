@@ -1,0 +1,10 @@
+<odoo>
+    <record id="group_field_log" model="res.groups">
+        <field name="name">Field Log Group</field>
+    </record>
+
+    <function model="res.users" name="write" context="{'no_reset_password': True}">
+        <value eval="[ref('base.user_admin')]" />
+        <value eval="{'groups_id': [(4, ref('group_field_log'))]}" />
+    </function>
+</odoo>
