@@ -1,0 +1,185 @@
+<odoo>
+    <record id="data_map_form" model="ir.ui.view">
+        <field name="model">data.map</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button
+                        name="validate"
+                        type="object"
+                        string="Validate"
+                        invisible="state in ('configured', 'closed') or not field_ids"
+                    />
+                    <button
+                        name="reset"
+                        type="object"
+                        string="Reset"
+                        invisible="state in ('draft', 'closed')"
+                    />
+                    <button
+                        name="start"
+                        type="object"
+                        class="fa fa-play oe_highlight"
+                        title="Run the import based on this mapping"
+                        invisible="not pattern_file or state == 'closed'"
+                    />
+                    <button
+                        name="close"
+                        type="object"
+                        string="Close"
+                        title="Prevent to execute again this mapping"
+                        invisible="state != 'configured'"
+                    />
+                    <button
+                        name="serialize_config"
+                        type="object"
+                        string="Save Config"
+                        title="Serialize the mapping and its rules to be reused"
+                        invisible="state in ('configured', 'closed') or not field_ids"
+                    />
+                    <button
+                        name="fill_field_rules"
+                        type="object"
+                        string="Fill field rules"
+                        title="Fill field from configuration"
+                        invisible="state in ('configured', 'closed') or not field_ids"
+                    />
+                    <field name="state" widget="statusbar" readonly="1" />
+                </header>
+                <sheet>
+                    <notebook colspan="4">
+                        <page string="Main" name="main">
+                            <group>
+                                <group name="left">
+                                    <field name="model_id" readonly="field_ids" />
+                                    <field name="transformation" readonly="readonly" />
+                                    <field
+                                        name="matching_field_id"
+                                        domain="[('model_id', '=', model_id)]"
+                                    />
+                                </group>
+                                <group name="right">
+                                    <field name="code" readonly="readonly" />
+                                    <field
+                                        name="pattern_file"
+                                        filename="pattern_file_name"
+                                        widget="binary"
+                                        readonly="state == 'configured'"
+                                        options="{'accepted_file_extensions': '.ods,.xlsx,.csv'}"
+                                    />
+                                    <field
+                                        name="multi_value_id"
+                                        domain="[('ttype', '=', 'json'), ('store', '=', 1), ('model_id', '=', model_id)]"
+                                        context="{'technical_name': 1}"
+                                    />
+                                </group>
+                            </group>
+                        </page>
+                        <page string="Other" name="other">
+                            <group>
+                                <group>
+                                    <field
+                                        name="only_update"
+                                        invisible="not matching_field_id"
+                                    />
+                                    <field name="freeze_field_rules" />
+                                    <field name="pattern_file_name" invisible="1" />
+                                    <field
+                                        name="parse_date"
+                                        invisible="file_type != 'csv'"
+                                    />
+                                </group>
+                                <group>
+                                    <field
+                                        name="comma_as_decimal"
+                                        invisible="file_type != 'csv'"
+                                    />
+                                    <field name="source_id" invisible="0" />
+                                    <field name="on_fail" />
+                                    <field name="readonly" />
+                                </group>
+                            </group>
+                            <group>
+                                <field name="comment" />
+                                <field
+                                    name="config"
+                                    placeholder="{'key': 'value'}  # use `Save Config` button"
+                                />
+                            </group>
+                        </page>
+                    </notebook>
+                    <group>
+                        <group>
+                            <separator string="Field rules" />
+                            <field name="field_ids" nolabel="1" />
+                        </group>
+                        <group>
+                            <separator string="Last Checks" invisible="not check" />
+                            <field invisible="not check" name="check" nolabel="1" />
+                            <separator string="Dataframe Transformation" />
+                            <field
+                                name="expression"
+                                widget="code"
+                                options="{'mode': 'python'}"
+                                nolabel="1"
+                            />
+                        </group>
+                    </group>
+                </sheet>
+                <chatter />
+            </form>
+        </field>
+    </record>
+
+    <record id="data_map_list" model="ir.ui.view">
+        <field name="model">data.map</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="sequence" widget="handle" />
+                <field name="code" />
+                <field name="transformation" />
+                <field name="model_id" />
+                <field name="matching_field_id" optional="hide" />
+            </list>
+        </field>
+    </record>
+
+    <record id="data_map_search" model="ir.ui.view">
+        <field name="model">data.map</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="model_id" />
+                <field name="flow" />
+                <field name="code" />
+                <group expand="0" string="Group By">
+                    <filter
+                        string="Model"
+                        name="model_id"
+                        domain="[]"
+                        context="{'group_by': 'model_id'}"
+                    />
+                    <filter
+                        string="Action"
+                        name="flow"
+                        domain="[]"
+                        context="{'group_by': 'flow'}"
+                    />
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_data_map" model="ir.actions.act_window">
+        <field name="name">Data mapping</field>
+        <field name="res_model">data.map</field>
+        <field name="view_mode">list,form</field>
+        <field name="path">data-map</field>
+    </record>
+
+    <menuitem
+        id="data_map_menu"
+        action="action_data_map"
+        sequence="1"
+        parent="df_source.dataframe_menu"
+    />
+</odoo>

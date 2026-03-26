@@ -1,0 +1,69 @@
+<odoo>
+    <record id="df_file_wiz_form" model="ir.ui.view">
+        <field name="model">df.file.wiz</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button
+                        name="apply"
+                        string=" Process"
+                        type="object"
+                        class="fa fa-play btn-primary"
+                        context="{'controller': '_process'}"
+                    />
+                    <button
+                        name="apply"
+                        string="  Recompute"
+                        type="object"
+                        class="fa fa-refresh"
+                        context="{'controller': '_recompute'}"
+                    />
+                </header>
+                <sheet>
+                    <group col="2">
+                        <group>
+                            <field
+                                name="file"
+                                widget="binary"
+                                filename="filename"
+                                readonly="file"
+                            />
+                            <field name="map_id" readonly="map_id" invisible="1" />
+                        </group>
+                        <group>
+                            <field
+                                name="scenari_explained"
+                                nolabel="1"
+                                invisible="not scenari_explained"
+                            />
+                            <field name="source_id" invisible="1" />
+                            <field name="filename" invisible="1" />
+                        </group>
+                    </group>
+                    <group col="1">
+                        <separator string="Failed Checks" invisible="not check" />
+                        <field name="check" invisible="not check" />
+                        <separator string="First row" />
+                        <field name="row_viewer" nolabel="1" />
+                        <separator string="Transformed data" invisible="not new_df" />
+                        <field name="comment" invisible="not comment" />
+                        <field name="new_df" nolabel="1" />
+                        <separator string="Original data" invisible="not original_df" />
+                        <field
+                            nolabel="1"
+                            name="original_df"
+                            invisible="not original_df"
+                        />
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="df_file_wiz_action" model="ir.actions.act_window">
+        <field name="name">Process Dataframe Wizard</field>
+        <field name="res_model">df.file.wiz</field>
+        <field name="view_mode">form</field>
+        <field name="target">inline</field>
+    </record>
+</odoo>

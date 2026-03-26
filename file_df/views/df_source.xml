@@ -1,0 +1,11 @@
+<odoo>
+    <record id="df_source_list" model="ir.ui.view">
+        <field name="model">df.source</field>
+        <field name="inherit_id" ref="df_source.df_source_list" />
+        <field name="arch" type="xml">
+            <xpath expr="//list/field[@name='state']" position="before">
+                <field name="map_id" />
+            </xpath>
+        </field>
+    </record>
+</odoo>

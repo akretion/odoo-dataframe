@@ -1,0 +1,7 @@
+# generated from manifests external_dependencies
+fastexcel
+odoo-test-helper>2.1.2
+pointblank[pl]
+polars
+slugify
+xlsxwriter>3.2.8
