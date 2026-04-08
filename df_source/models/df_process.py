@@ -38,7 +38,9 @@ class DfProcess(models.AbstractModel):
             df.select(pl.col(src_col).unique()).get_column(src_col).to_list()
         )
         domain = [(ref_col, "in", list_from_col)]
-        map_ref_col = {x[ref_col]: str(x.id) for x in self.env[model].search(domain)}
+        map_ref_col = {
+            x[ref_col]: str(x.id) for x in self.env[model].search(domain) if x[ref_col]
+        }
         df = df.with_columns(
             pl.col(src_col).str.replace_many(map_ref_col).alias(new_col)
         )

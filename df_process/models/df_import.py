@@ -235,14 +235,14 @@ class DfImport(models.AbstractModel):
         if not field_name:
             # TODO collect exceptions and log in odoo
             return df
-        # odoo data: vals_ids is {field_value: record_id} from field.relation
-        vals_ids = {
+        # odoo data: val_ids is {field_value: record_id} from field.relation
+        val_ids = {
             x[field_name]: x.id
             for x in self.env[m2o.relation].search([(field_name, "!=", False)])
         }
         # dataframe field values unknown in odoo
-        unknown = df.filter(~pl.col(m2o.name).is_in(vals_ids.keys()))
-        df = df.with_columns(pl.col(m2o.name).replace(vals_ids).cast(pl.Int64))
+        unknown = df.filter(~pl.col(m2o.name).is_in(val_ids.keys()))
+        df = df.with_columns(pl.col(m2o.name).replace(val_ids).cast(pl.Int64))
         if not unknown.is_empty():
             logger.warning("Unmatching values", unknown)
             raise ValidationError(
@@ -261,6 +261,8 @@ class DfImport(models.AbstractModel):
 
     def _convert_date(self, df):
         "TODO improve date management with better format detection and error handling"
+        if df.is_empty():
+            return df
         for field in [x for x in df.columns if "date" in x]:
             # TODO improve date management
             format_ = "%d/%m/%Y"
