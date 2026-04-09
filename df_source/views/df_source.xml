@@ -4,15 +4,22 @@
         <field name="arch" type="xml">
             <form>
                 <sheet>
-                    <header />
+                    <header>
+                        <field name="state" widget="statusbar" />
+                    </header>
                     <group>
                         <group>
                             <field name="model" />
-                            <field name="name" optional="hide" />
-                            <field name="short_name" string="Name" optional="show" />
+                            <field name="file" readonly="state == 'done'" />
+                            <field
+                                name="short_name"
+                                string="Name"
+                                readonly="state == 'done'"
+                            />
                         </group>
                         <group name="right">
-                            <field name="state" />
+                            <field name="name" optional="hide" />
+                            <field name="filename" invisible="1" />
                             <field name="count" />
                         </group>
                     </group>

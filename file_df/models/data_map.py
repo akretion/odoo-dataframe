@@ -3,6 +3,7 @@ import csv
 import inspect
 import io
 import logging
+import math
 import os
 
 import polars as pl
@@ -101,6 +102,10 @@ class DataMap(models.Model):
     )
     freeze_field_rules = fields.Boolean(
         help="Freeze field rules to prevent update when new inserted file"
+    )
+    chunk_size = fields.Integer(
+        help="Split file if rows count is upper than this threshold.\n"
+        "Manually set field. It avoids to fall in timeout"
     )
 
     def _inverse_check_config(self):
@@ -380,6 +385,9 @@ class DataMap(models.Model):
         """
         source = source or self.source_id
         df = self._get_dataframe(source)
+        if self.chunk_size and df.height > self.chunk_size:
+            # We want to avoid a server timeout then we split big df
+            df = self._split_original_file(df)
         # rename columns
         df = df.rename({x.name: x.named for x in self.field_ids})
         # remove useless columns
@@ -387,6 +395,31 @@ class DataMap(models.Model):
         # first steps of transformation
         df = self._df_pre_alter(df)
         self._df_validate(df)
+        return df
+
+    def _split_original_file(self, df):
+        def save_as_source(df_chunk, filename):
+            output = io.BytesIO()
+            df_chunk.write_csv(output)
+            source_vals = {
+                "file": base64.encodebytes(output.getvalue()),
+                "name": filename,
+                "map_id": self.id,
+                "model": self.model_id.model,
+            }
+            return self.env["df.source"].create(source_vals)
+
+        # Calculate how many files are needed (rounding up)
+        for i in range(math.ceil(df.height / self.chunk_size)):
+            # Calculate starting point
+            offset = i * self.chunk_size
+            # Extract the chunk
+            df_chunk = df.slice(offset, self.chunk_size)
+            filename = f"{self.pattern_file_name[:-5]}_{i+1}.csv"
+            src = save_as_source(df_chunk, filename)
+            if i == 0:
+                df = df_chunk
+                self.source_id = src.id
         return df
 
     def _check_missing_cols(self, df, cols):

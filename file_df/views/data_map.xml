@@ -83,6 +83,7 @@
                                         invisible="not matching_field_id"
                                     />
                                     <field name="freeze_field_rules" />
+                                    <field name="chunk_size" />
                                     <field name="pattern_file_name" invisible="1" />
                                     <field
                                         name="parse_date"
