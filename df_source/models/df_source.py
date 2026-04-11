@@ -42,6 +42,7 @@ class DfSource(models.Model):
             ("draft", "Draft"),
             ("done", "Done"),
             ("failed", "Failed"),
+            ("canceled", "Canceled"),
         ],
         default="draft",
     )
@@ -89,10 +90,10 @@ class DfSource(models.Model):
         for rec in self:
             short = rec.name
             for elm in self._subsitute_in_name():
-                if elm in short:
+                if short and elm in short:
                     short = short.replace(elm, "")
-            rec.short_name = short
-            rec.file_name = rec.name[rec.name.rfind("/") + 1 :]
+            rec.short_name = short or ""
+            rec.file_name = rec.name and rec.name[rec.name.rfind("/") + 1 :] or ""
 
     def _subsitute_in_name(self):
         return ["/odoo/links/", "/odoo/local-src/"]

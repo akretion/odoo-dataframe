@@ -21,7 +21,7 @@
                         type="object"
                         class="fa fa-play oe_highlight"
                         title="Run the import based on this mapping"
-                        invisible="not pattern_file or state == 'closed'"
+                        invisible="not file or state == 'closed'"
                     />
                     <button
                         name="close"
@@ -61,12 +61,14 @@
                                 <group name="right">
                                     <field name="code" readonly="readonly" />
                                     <field
-                                        name="pattern_file"
-                                        filename="pattern_file_name"
+                                        name="file"
+                                        filename="file_name"
                                         widget="binary"
                                         readonly="state == 'configured'"
+                                        invisible="source_id"
                                         options="{'accepted_file_extensions': '.ods,.xlsx,.csv'}"
                                     />
+                                    <field name="source_id" invisible="not source_id" />
                                     <field
                                         name="multi_value_id"
                                         domain="[('ttype', '=', 'json'), ('store', '=', 1), ('model_id', '=', model_id)]"
@@ -84,7 +86,7 @@
                                     />
                                     <field name="freeze_field_rules" />
                                     <field name="chunk_size" />
-                                    <field name="pattern_file_name" invisible="1" />
+                                    <field name="file_name" invisible="1" />
                                     <field
                                         name="parse_date"
                                         invisible="file_type != 'csv'"
@@ -95,7 +97,6 @@
                                         name="comma_as_decimal"
                                         invisible="file_type != 'csv'"
                                     />
-                                    <field name="source_id" invisible="0" />
                                     <field name="on_fail" />
                                     <field name="readonly" />
                                 </group>

@@ -43,7 +43,7 @@ class Test(TransactionCase):
 
     def test_insert_csv(self):
         d_map = self.env["data.map"]._add_demo_data(name="new")
-        d_map.pattern_file = base64.b64encode(
+        d_map.file = base64.b64encode(
             b"Country;name;Town;Street\n" + b"France;Akretion;Lyon;rue de l'arbre sec\n"
         )
         d_map.serialize_config()
@@ -59,10 +59,10 @@ class Test(TransactionCase):
             filename = f"hello_file.{name}"
             path = Path(get_module_path(MODULE)) / "tests" / filename
             with open(path, "rb") as f:
-                d_map.pattern_file_name = filename
-                d_map.pattern_file = base64.b64encode(f.read())
-                assert d_map.pattern_file
-                assert d_map.pattern_file_name == filename
+                d_map.file_name = filename
+                d_map.file = base64.b64encode(f.read())
+                assert d_map.file
+                assert d_map.file_name == filename
 
         insert_file("xlsx")
         insert_file("ods")

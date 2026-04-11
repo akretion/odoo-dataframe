@@ -10,6 +10,7 @@ import polars as pl
 
 from odoo import Command as cmd
 from odoo import _, exceptions, fields, models
+from odoo.exceptions import UserError
 from odoo.tools.safe_eval import safe_eval
 
 logger = logging.getLogger(__name__)
@@ -32,16 +33,19 @@ class DataMap(models.Model):
         required=True, help="Allow to browse between several identical models"
     )
     source_id = fields.Many2one(comodel_name="df.source", readonly=True, copy=False)
-    pattern_file = fields.Binary(
-        inverse="_inverse_file_template", copy=False, help="Template file to download"
+    pattern_file = fields.Binary()
+    file = fields.Binary(
+        inverse="_inverse_file_template",
+        copy=False,
+        default=lambda s: s.pattern_file,
+        help="Template file to download",
     )
-    pattern_file_name = fields.Char()
+    file_name = fields.Char()
     file_type = fields.Selection([("csv", "csv"), ("ods", "ods"), ("xlsx", "xlsx")])
     comma_as_decimal = fields.Boolean(
         help="In csv case, if decimal is defined by a ',' instead of '.'"
     )
     parse_date = fields.Boolean(help="In csv case, try to guess date string format")
-    comment = fields.Text(help="Explaining notes for wizard")
     check = fields.Text(readonly=True, help="Primary checks on datafame before process")
     flow = fields.Selection(
         selection=[("import", "Import")],
@@ -75,7 +79,6 @@ class DataMap(models.Model):
         inverse="_inverse_multi_value",
         help="Json field to store multi data in one field: populate field in rules",
     )
-    config = fields.Text(inverse="_inverse_check_config")
     readonly = fields.Boolean()
     sequence = fields.Integer()
     transformation = fields.Selection(
@@ -107,6 +110,8 @@ class DataMap(models.Model):
         help="Split file if rows count is upper than this threshold.\n"
         "Manually set field. It avoids to fall in timeout"
     )
+    comment = fields.Text(help="Explaining notes for wizard")
+    config = fields.Text(inverse="_inverse_check_config")
 
     def _inverse_check_config(self):
         for rec in self:
@@ -120,23 +125,27 @@ class DataMap(models.Model):
 
     def _inverse_file_template(self):
         for rec in self:
-            if rec.pattern_file and not rec.freeze_field_rules:
-                columns = rec._extract_columns_from_template_file()
-                rec.fill_field_rules(columns)
+            if rec.file:
+                if not rec.freeze_field_rules:
+                    columns = rec._extract_columns_from_template_file()
+                    rec.fill_field_rules(columns)
+            else:
+                # TODO fix
+                rec.source_id.unlink()
             self._upsert_df_source()
 
     def _upsert_df_source(self):
         self.ensure_one()
         source_vals = {
-            "file": self.pattern_file,
-            "name": self.pattern_file_name,
+            "file": self.file,
+            "name": self.file_name,
             "map_id": self.id,
             "model": self.model_id.model,
         }
         if self.source_id and self.source_id.state == "draft":
             self.source_id.write(source_vals)
         else:
-            source_vals["name"] = f"{self.pattern_file_name}"
+            source_vals["name"] = f"{self.file_name}"
             self.source_id = self.env["df.source"].create(source_vals).id
 
     def _compute_df_string_expression(self):
@@ -187,25 +196,25 @@ class DataMap(models.Model):
         self.ensure_one()
         # TODO: implement mimetype
         columns = False
-        logger.info("Extract columns from file %s", self.pattern_file_name)
-        if self.pattern_file_name.endswith(".csv"):
-            line = (
-                io.BytesIO(base64.b64decode(self.pattern_file))
-                .readline()
-                .decode("utf-8")
-            )
+        logger.info("Extract columns from file %s", self.file_name)
+        if self.file_name.endswith(".csv"):
+            line = io.BytesIO(base64.b64decode(self.file)).readline().decode("utf-8")
             dialect = csv.Sniffer().sniff(line)
-            columns = line.replace(dialect.lineterminator, "").split(dialect.delimiter)
+            columns = (
+                line.replace(dialect.lineterminator, "")
+                .replace('"', "")
+                .split(dialect.delimiter)
+            )
             self.file_type = "csv"
-        elif self.pattern_file_name.endswith(".xlsx"):
+        elif self.file_name.endswith(".xlsx"):
             df = pl.read_excel(
-                source=io.BytesIO(base64.b64decode(self.pattern_file)),
+                source=io.BytesIO(base64.b64decode(self.file)),
             )
             columns = df.columns
             self.file_type = "xlsx"
-        elif self.pattern_file_name.endswith(".ods"):
+        elif self.file_name.endswith(".ods"):
             df = pl.read_ods(
-                source=io.BytesIO(base64.b64decode(self.pattern_file)),
+                source=io.BytesIO(base64.b64decode(self.file)),
             )
             columns = df.columns
             self.file_type = "ods"
@@ -398,34 +407,46 @@ class DataMap(models.Model):
         return df
 
     def _split_original_file(self, df):
-        def save_as_source(df_chunk, filename):
+        if self.file_type == "ods":
+            raise UserError(_("Unsupported file split for ODS format"))
+
+        def save_as_source(df_chunk):
             output = io.BytesIO()
-            df_chunk.write_csv(output)
+            filename = f"{self.file_name[:-5]}_{i+1}"
+            if "N°" in df_chunk.columns:
+                df_chunk = df_chunk.drop("N°")
+            if self.file_type == "csv":
+                df_chunk.write_csv(output, separator=";", quote_char='"')
+            elif self.file_type == "xlsx":
+                df_chunk.write_excel(output)
+            filename += f".{self.file_type}"
             source_vals = {
                 "file": base64.encodebytes(output.getvalue()),
                 "name": filename,
+                "filename": filename,
                 "map_id": self.id,
                 "model": self.model_id.model,
             }
             return self.env["df.source"].create(source_vals)
 
+        new_df = df
         # Calculate how many files are needed (rounding up)
         for i in range(math.ceil(df.height / self.chunk_size)):
             # Calculate starting point
             offset = i * self.chunk_size
             # Extract the chunk
             df_chunk = df.slice(offset, self.chunk_size)
-            filename = f"{self.pattern_file_name[:-5]}_{i+1}.csv"
-            src = save_as_source(df_chunk, filename)
+            src = save_as_source(df_chunk)
             if i == 0:
-                df = df_chunk
+                new_df = df_chunk
+                self.source_id.state = "canceled"
                 self.source_id = src.id
-        return df
+        return new_df
 
     def _check_missing_cols(self, df, cols):
         missing = [x for x in cols if x not in df.columns]
         if missing:
-            raise exceptions.UserError(f"Missing columns {missing} field rules")
+            raise UserError(_(f"Missing columns {missing} field rules"))
 
     def _remove_cols_from_previewed_df(self, df):
         """This method is used to remove columns from dataframe preview
@@ -439,7 +460,7 @@ class DataMap(models.Model):
                 {
                     "model_id": self.env.ref("base.model_res_partner").id,
                     "code": name,
-                    "pattern_file_name": f"{name}_file.csv",
+                    "file_name": f"{name}_file.csv",
                 }
             )
             return demo
@@ -459,7 +480,7 @@ class DataMap(models.Model):
             }
         )
 
-        demo.pattern_file = base64.b64encode(
+        demo.file = base64.b64encode(
             b"Country;name;Town;Street;color\n"
             + b"France;Akretion;Lyon;rue de l'arbre sec;green\n"
             + b"Belgium;Achimanapse;Brussels;rue de ...;purple\n"
