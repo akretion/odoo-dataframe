@@ -84,6 +84,7 @@ class DfFileWiz(models.TransientModel):
         for rec in self:
             scenari = []
             if rec.map_id.matching_field_id:
+                disp = rec.map_id.matching_field_id.display_name
                 if rec.map_id.only_update:
                     scenari.append(
                         _(
@@ -97,13 +98,8 @@ class DfFileWiz(models.TransientModel):
                         scenari.append(_("- records will be updated via 'id' column."))
                         scenari.append(_("- no already existing data will be created."))
                     else:
-                        scenari.append(
-                            _(
-                                "- all lines will be processed as new records "
-                                + "because no 'id' column."
-                            )
-                        )
-                        scenari.append(_("- no update will be done."))
+                        scenari.append(_(f"- records will be updated via '{disp}'."))
+                        scenari.append(_("- create records if data doesn't exists."))
             rec.scenari_explained = "\n".join(scenari)
 
     def _process_df_base(self):

@@ -33,7 +33,7 @@ class DfImport(models.AbstractModel):
             try:
                 # We try all at once for performance, but if it fails
                 # we try one by one to identify the problem record(s)
-                created_recs = self.env[source.model].create(vals_list)
+                created_recs = self.env[source.model].sudo().create(vals_list)
             except Exception as err:
                 logger.warning(
                     "Error during bulk creation, trying one by one "
@@ -41,7 +41,7 @@ class DfImport(models.AbstractModel):
                 )
                 for vals in vals_list:
                     try:
-                        self.env[source.model].create(vals)
+                        self.env[source.model].sudo().create(vals)
                     except Exception as err:
                         row_viewer = self.env["df.import"]._convert_flat_dict_to_ini(
                             vals
@@ -70,7 +70,7 @@ class DfImport(models.AbstractModel):
             else:
                 record_ids.append(id_)
                 record = self.env[source.model].browse(id_)
-            record.write(vals)
+            record.sudo().write(vals)
         return self.env[source.model].browse(record_ids)
 
     def _split_create_update_df(self, df, source):
@@ -149,7 +149,7 @@ class DfImport(models.AbstractModel):
         # we consider here that keys combination are unique
         # TODO can be improved with non unique scenarii
         domain = [(key, "!=", False) for key in keys]
-        mapping = {x.id: x for x in self.env[source.model].search(domain)}
+        mapping = {x.id: x for x in self.env[source.model].sudo().search(domain)}
         # mapping'll be {id1: {'city_id': val1, 'zip': val2}, id2: {...}
         for record in mapping.values():
             mapping[record.id] = {
