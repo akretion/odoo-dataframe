@@ -5,6 +5,7 @@
         <field name="arch" type="xml">
             <xpath expr="//list/field[@name='state']" position="before">
                 <field name="map_id" />
+                <field name="comment_short" optional="hide" />
             </xpath>
         </field>
     </record>
@@ -15,6 +16,11 @@
         <field name="arch" type="xml">
             <xpath expr="//field[@name='count']" position="before">
                 <field name="map_id" readonly="state == 'done'" />
+            </xpath>
+            <xpath expr="//group[last()]" position="after">
+                <group col="1">
+                    <field name="comment" />
+                </group>
             </xpath>
         </field>
     </record>

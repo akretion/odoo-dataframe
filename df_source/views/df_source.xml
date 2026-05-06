@@ -3,10 +3,16 @@
         <field name="model">df.source</field>
         <field name="arch" type="xml">
             <form>
+                <header>
+                    <button
+                        type="object"
+                        name="start"
+                        title="Start"
+                        class="fa fa-play"
+                    />
+                    <field name="state" widget="statusbar" />
+                </header>
                 <sheet>
-                    <header>
-                        <field name="state" widget="statusbar" />
-                    </header>
                     <group>
                         <group>
                             <field name="model" />

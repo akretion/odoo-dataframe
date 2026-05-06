@@ -175,9 +175,11 @@ class DataMap(models.Model):
 
     def _get_transformed_df(self, prefix_method, df):
         """Call conventionaly named method to transform dataframe, if exist"""
-        res = getattr(self, f"{prefix_method}_{self.transformation}", None)
-        if res:
-            return res(df)
+        exist = getattr(self, f"{prefix_method}_{self.transformation}", None)
+        if exist:
+            # res can be dataframe or a string in case of exception
+            res = exist(df)
+            return res
         return df
 
     def _df_validate(self, df):
@@ -403,6 +405,9 @@ class DataMap(models.Model):
         df = df.drop([x.named for x in self.field_ids if x.useless])
         # first steps of transformation
         df = self._df_pre_alter(df)
+        if isinstance(df, str):
+            # in that case it's an exception
+            return df
         self._df_validate(df)
         return df
 

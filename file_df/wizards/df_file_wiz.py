@@ -43,14 +43,33 @@ class DfFileWiz(models.TransientModel):
             # from field_log model
             # TODO improve this marginal behavior
             return wiz
-        wiz._process_file()
+        res = wiz._process_file()
+        if res and hasattr(res, "_name") and res._name == "df.source":
+            return {
+                "name": _("Updated ..."),
+                "res_model": "df.source",
+                "view_mode": "form",
+                "res_id": res.id,
+                "type": "ir.actions.act_window",
+                "target": "current",
+            }
         return wiz
 
     def _process_file(self):
         """Full process to wizard preview"""
         self.ensure_one()
         base_df = self._process_df_base()
-        df = self._process_resulting_df(base_df=base_df)
+        if isinstance(base_df, str):
+            self.source_id.comment = base_df
+            return self.source_id
+        elif base_df.is_empty():
+            self.source_id.comment = "no data in df: check file"
+            return self.source_id
+        try:
+            df = self._process_resulting_df(base_df=base_df)
+        except Exception as e:
+            self.source_id.comment = f"{self.source_id.id} - {e.__str__()}"
+            return self.source_id
         # display the original dataframe before transformation
         # TODO improve base_df display
         self.original_df = self._2html(base_df)

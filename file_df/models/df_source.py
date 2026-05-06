@@ -10,6 +10,17 @@ class DfSource(models.Model):
     _inherit = "df.source"
 
     map_id = fields.Many2one(comodel_name="data.map", ondelete="cascade")
+    comment = fields.Text(help="Fail or manual message")
+    comment_short = fields.Char(compute="_compute_comment_short")
+
+    def _compute_comment_short(self):
+        for rec in self:
+            if rec.comment and "\n" in rec.comment:
+                rec.comment_short = (
+                    rec.comment and rec.comment[: rec.comment.index("\n") - 1]
+                )
+            else:
+                rec.comment_short = rec.comment
 
     def _process(self):
         action = super()._process()
@@ -30,9 +41,8 @@ class DfSource(models.Model):
         }
         res = self.env["df.file.wiz"].create(vals)
         if isinstance(res, dict):
-            # res is an Odoo action
+            # res is an Odoo action (i.e. df.source when fail)
             return res  # pragma: no cover
-        # TODO why an action ???
         if self.name.lower().endswith((".csv", ".ods", ".xlsx")):
             wiz_action = self.env.ref(f"{MODULE}.df_file_wiz_action")._get_action_dict()
             wiz_action["res_id"] = res.id
