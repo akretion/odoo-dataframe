@@ -10,17 +10,22 @@ class DfSource(models.Model):
     _inherit = "df.source"
 
     map_id = fields.Many2one(comodel_name="data.map", ondelete="cascade")
-    comment = fields.Text(help="Fail or manual message")
-    comment_short = fields.Char(compute="_compute_comment_short")
+    comment = fields.Html(help="Fail or manual message")
+    comment_short = fields.Html(
+        string="Comment",
+        compute="_compute_comment_short",
+        help="Comment field short version for list view",
+    )
 
     def _compute_comment_short(self):
         for rec in self:
-            if rec.comment and "\n" in rec.comment:
-                rec.comment_short = (
-                    rec.comment and rec.comment[: rec.comment.index("\n") - 1]
-                )
+            if rec.comment:
+                if "…" in rec.comment:
+                    rec.comment_short = rec.comment[: rec.comment.index("…") + 1]
+                else:
+                    rec.comment_short = rec.comment[:30]
             else:
-                rec.comment_short = rec.comment
+                rec.comment_short = False
 
     def _process(self):
         action = super()._process()

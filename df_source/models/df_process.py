@@ -41,8 +41,13 @@ class DfProcess(models.AbstractModel):
         map_ref_col = {
             x[ref_col]: str(x.id) for x in self.env[model].search(domain) if x[ref_col]
         }
+        # to have a relevant substitution, we need to sort dict
+        # to have larger keys first
+        map_ref_col = dict(
+            sorted(map_ref_col.items(), key=lambda x: len(x[0]), reverse=True)
+        )
         df = df.with_columns(
-            pl.col(src_col).str.replace_many(map_ref_col).alias(new_col)
+            pl.col(src_col).str.replace_many(map_ref_col, leftmost=True).alias(new_col)
         )
         return df
 

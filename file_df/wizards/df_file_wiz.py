@@ -45,6 +45,7 @@ class DfFileWiz(models.TransientModel):
             return wiz
         res = wiz._process_file()
         if res and hasattr(res, "_name") and res._name == "df.source":
+            res.state = "failed"
             return {
                 "name": _("Updated ..."),
                 "res_model": "df.source",

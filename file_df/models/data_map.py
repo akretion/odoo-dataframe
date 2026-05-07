@@ -453,6 +453,25 @@ class DataMap(models.Model):
         if missing:
             raise UserError(_(f"Missing columns {missing} field rules"))
 
+    def _df_format(self, df):
+        """Set dataframe output for an html/text field with pretty display"""
+
+        def key_val(df):
+            "Transform df in ini like syntax"
+            lines = []
+            for row in df.iter_rows(named=True):
+                lines.append("<br />".join(f"<b>{k}</b> = {v}" for k, v in row.items()))
+                lines.append("<br /><br />")  # separator
+            return " ".join(lines)
+
+        if len(df) < 3:
+            # few records then better display in ini format
+            output = key_val(df)
+        else:
+            output = self.env["df.file.wiz"]._2html(df)
+        string = f"… <br />{output}"
+        return string
+
     def _remove_cols_from_previewed_df(self, df):
         """This method is used to remove columns from dataframe preview
         but still used for transformation and import."""
